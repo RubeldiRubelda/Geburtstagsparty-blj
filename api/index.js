@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const { put } = require('@vercel/blob');
+const { put, head, del } = require('@vercel/blob');
 
 const app = express();
 
@@ -17,10 +17,26 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
-// Datenbank simulieren mit JSON-Datei
-const dataFile = path.join(__dirname, '..', 'songs.json');
-if (!fs.existsSync(dataFile)) {
-  fs.writeFileSync(dataFile, JSON.stringify([]));
+// Datenbank in Vercel Blob
+const dataFileUrl = 'https://geburtstagsparty-blj.vercel.app/songs.json'; // Passe an deine URL an, oder dynamisch
+
+async function loadSongs() {
+  try {
+    const response = await fetch(dataFileUrl);
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (e) {
+    console.log('No existing songs.json, starting empty');
+  }
+  return [];
+}
+
+async function saveSongs(songs) {
+  const blob = await put('songs.json', JSON.stringify(songs), {
+    access: 'public',
+  });
+  // Update dataFileUrl if needed, but for simplicity, assume fixed
 }
 
 // Multer für Uploads (in Memory speichern)
@@ -28,8 +44,8 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // Routen
-app.get('/', (req, res) => {
-  const songs = JSON.parse(fs.readFileSync(dataFile));
+app.get('/', async (req, res) => {
+  const songs = await loadSongs();
   res.render('index', { songs });
 });
 
@@ -59,16 +75,16 @@ app.post('/admin/upload', upload.single('audio'), async (req, res) => {
   }
 
   console.log('Saving to database...');
-  const songs = JSON.parse(fs.readFileSync(dataFile));
+  const songs = await loadSongs();
   songs.push({ id: Date.now(), title, artist, audio: audioUrl, lyrics });
-  fs.writeFileSync(dataFile, JSON.stringify(songs));
+  await saveSongs(songs);
   console.log('Song saved, redirecting...');
 
   res.redirect('/');
 });
 
-app.get('/song/:id', (req, res) => {
-  const songs = JSON.parse(fs.readFileSync(dataFile));
+app.get('/song/:id', async (req, res) => {
+  const songs = await loadSongs();
   const song = songs.find(s => s.id == req.params.id);
   if (song) {
     res.render('song', { song });
