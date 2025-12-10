@@ -2,7 +2,8 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const { put, head, del } = require('@vercel/blob');
+const { put } = require('@vercel/blob');
+const { kv } = require('@vercel/kv');
 
 const app = express();
 
@@ -17,59 +18,23 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
-// Datenbank in Vercel Blob
-const storeId = process.env.BLOB_STORE_ID || '1ahfzdbujc5ky0rd'; // Deine Store-ID
-const dbUrlFile = `https://${storeId}.public.blob.vercel-storage.com/db-url.json`;
-
-async function getDbUrl() {
-  try {
-    const response = await fetch(dbUrlFile);
-    if (response.ok) {
-      const data = await response.json();
-      return data.url;
-    }
-  } catch (e) {
-    console.log('No db-url.json found');
-  }
-  return null;
-}
-
+// Datenbank in Vercel KV
 async function loadSongs() {
-  const dataFileUrl = await getDbUrl();
-  if (!dataFileUrl) {
-    console.log('No data URL, returning empty');
+  console.log('Loading songs from KV');
+  try {
+    const songs = await kv.get('songs');
+    console.log('Songs loaded:', songs);
+    return songs || [];
+  } catch (e) {
+    console.log('KV error:', e.message);
     return [];
   }
-  console.log('Loading songs from:', dataFileUrl);
-  try {
-    const response = await fetch(dataFileUrl);
-    console.log('Fetch response status:', response.status);
-    if (response.ok) {
-      const songs = await response.json();
-      console.log('Songs loaded:', songs);
-      return songs;
-    } else {
-      console.log('Response not ok, body:', await response.text());
-    }
-  } catch (e) {
-    console.log('Fetch error:', e.message);
-  }
-  console.log('Returning empty array');
-  return [];
 }
 
 async function saveSongs(songs) {
-  console.log('Saving songs:', songs);
-  const blob = await put('songs.json', JSON.stringify(songs), {
-    access: 'public',
-  });
-  console.log('Saved songs to Blob URL:', blob.url);
-
-  // Speichere die URL in db-url.json
-  const urlBlob = await put('db-url.json', JSON.stringify({ url: blob.url }), {
-    access: 'public',
-  });
-  console.log('Saved URL to:', urlBlob.url);
+  console.log('Saving songs to KV:', songs);
+  await kv.set('songs', songs);
+  console.log('Songs saved to KV');
 }
 
 // Multer für Uploads (in Memory speichern)
