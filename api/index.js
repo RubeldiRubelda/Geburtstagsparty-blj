@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const { put } = require('@vercel/blob');
 
 const app = express();
 
@@ -22,19 +23,8 @@ if (!fs.existsSync(dataFile)) {
   fs.writeFileSync(dataFile, JSON.stringify([]));
 }
 
-// Multer für Uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, '..', 'public', 'uploads');
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
+// Multer für Uploads (in Memory speichern)
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // Routen
@@ -47,14 +37,26 @@ app.get('/admin', (req, res) => {
   res.render('admin');
 });
 
-app.post('/admin/upload', upload.single('audio'), (req, res) => {
+app.post('/admin/upload', upload.single('audio'), async (req, res) => {
   console.log('req.body:', req.body);
   console.log('req.file:', req.file);
   const { title, artist, lyrics } = req.body;
-  const audioFile = req.file ? req.file.filename : null;
+  let audioUrl = null;
+
+  if (req.file) {
+    try {
+      const blob = await put(`uploads/${Date.now()}-${req.file.originalname}`, req.file.buffer, {
+        access: 'public',
+      });
+      audioUrl = blob.url;
+    } catch (error) {
+      console.error('Upload error:', error);
+      return res.status(500).send('Upload failed');
+    }
+  }
 
   const songs = JSON.parse(fs.readFileSync(dataFile));
-  songs.push({ id: Date.now(), title, artist, audio: audioFile, lyrics });
+  songs.push({ id: Date.now(), title, artist, audio: audioUrl, lyrics });
   fs.writeFileSync(dataFile, JSON.stringify(songs));
 
   res.redirect('/');
