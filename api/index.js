@@ -45,6 +45,7 @@ function loadSongs() {
     let readme = '';
     if (fs.existsSync(readmeFile)) {
       readme = fs.readFileSync(readmeFile, 'utf8');
+      console.log('Readme content:', readme);
     }
 
     let title = folder;
@@ -53,8 +54,12 @@ function loadSongs() {
       // Parse simple README, e.g. Title: ..., Artist: ...
       const titleMatch = readme.match(/Title:\s*(.+)/i);
       const artistMatch = readme.match(/Artist:\s*(.+)/i);
+      console.log('Title match:', titleMatch);
+      console.log('Artist match:', artistMatch);
       if (titleMatch) title = titleMatch[1].trim();
       if (artistMatch) artist = artistMatch[1].trim();
+      console.log('Parsed title:', title);
+      console.log('Parsed artist:', artist);
     }
 
     if (audioFile) {
