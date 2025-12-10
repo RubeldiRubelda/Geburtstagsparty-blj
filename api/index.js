@@ -18,7 +18,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
 // Datenbank in Vercel Blob
-const storeId = process.env.BLOB_STORE_ID || 'store_1AHfZDbUJc5Ky0Rd'; // Ersetze mit deiner Store-ID
+const storeId = process.env.BLOB_STORE_ID || '1ahfzdbujc5ky0rd'; // Deine Store-ID
 const dataFileUrl = `https://${storeId}.public.blob.vercel-storage.com/songs.json`;
 
 async function loadSongs() {
