@@ -41,9 +41,11 @@ async function loadSongs() {
 }
 
 async function saveSongs(songs) {
+  console.log('Saving songs:', songs);
   const blob = await put('songs.json', JSON.stringify(songs), {
     access: 'public',
   });
+  console.log('Saved to Blob URL:', blob.url);
   // Die URL wird automatisch generiert
 }
 
