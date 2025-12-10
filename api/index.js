@@ -22,14 +22,21 @@ const storeId = process.env.BLOB_STORE_ID || '1ahfzdbujc5ky0rd'; // Deine Store-
 const dataFileUrl = `https://${storeId}.public.blob.vercel-storage.com/songs.json`;
 
 async function loadSongs() {
+  console.log('Loading songs from:', dataFileUrl);
   try {
     const response = await fetch(dataFileUrl);
+    console.log('Fetch response status:', response.status);
     if (response.ok) {
-      return await response.json();
+      const songs = await response.json();
+      console.log('Songs loaded:', songs);
+      return songs;
+    } else {
+      console.log('Response not ok, body:', await response.text());
     }
   } catch (e) {
-    console.log('No existing songs.json, starting empty');
+    console.log('Fetch error:', e.message);
   }
+  console.log('Returning empty array');
   return [];
 }
 
