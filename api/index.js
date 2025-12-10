@@ -12,6 +12,7 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
+app.use('/songs', express.static('songs'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
@@ -41,10 +42,14 @@ function loadSongs() {
       lyrics = fs.readFileSync(lyricsFile, 'utf8');
     }
 
+    let readme = '';
+    if (fs.existsSync(readmeFile)) {
+      readme = fs.readFileSync(readmeFile, 'utf8');
+    }
+
     let title = folder;
     let artist = 'Unbekannt';
-    if (fs.existsSync(readmeFile)) {
-      const readme = fs.readFileSync(readmeFile, 'utf8');
+    if (readme) {
       // Parse simple README, e.g. Title: ..., Artist: ...
       const titleMatch = readme.match(/Title:\s*(.+)/i);
       const artistMatch = readme.match(/Artist:\s*(.+)/i);
@@ -58,7 +63,8 @@ function loadSongs() {
         title,
         artist,
         audio: `/songs/${folder}/${audioFile}`,
-        lyrics
+        lyrics,
+        readme
       });
     }
   });

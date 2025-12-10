@@ -11,8 +11,12 @@
     <h1><%= song.title %> - <%= song.artist %></h1>
     <% if (song.audio) { %>
       <audio controls class="mb-3">
-        <source src="/uploads/<%= song.audio %>" type="audio/mpeg">
+        <source src="<%= song.audio %>" type="audio/mpeg">
       </audio>
+    <% } %>
+    <% if (song.readme) { %>
+      <h2>Info</h2>
+      <pre class="bg-dark text-light p-3 rounded"><%= song.readme %></pre>
     <% } %>
     <h2>Lyrics</h2>
     <pre class="bg-dark text-light p-3 rounded"><%= song.lyrics %></pre>
