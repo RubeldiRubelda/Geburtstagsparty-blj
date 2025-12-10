@@ -18,7 +18,8 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
 // Datenbank in Vercel Blob
-const dataFileUrl = 'https://geburtstagsparty-blj.vercel.app/songs.json'; // Passe an deine URL an, oder dynamisch
+const storeId = process.env.BLOB_STORE_ID || 'store_1AHfZDbUJc5Ky0Rd'; // Ersetze mit deiner Store-ID
+const dataFileUrl = `https://${storeId}.public.blob.vercel-storage.com/songs.json`;
 
 async function loadSongs() {
   try {
@@ -36,7 +37,7 @@ async function saveSongs(songs) {
   const blob = await put('songs.json', JSON.stringify(songs), {
     access: 'public',
   });
-  // Update dataFileUrl if needed, but for simplicity, assume fixed
+  // Die URL wird automatisch generiert
 }
 
 // Multer für Uploads (in Memory speichern)
