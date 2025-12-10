@@ -55,9 +55,9 @@ function loadSongs() {
     let title = folder;
     let artist = 'Unbekannt';
     if (readme) {
-      // Parse simple README, e.g. Title: ..., Artist: ...
-      const titleMatch = readme.match(/Title:\s*(.+)/i);
-      const artistMatch = readme.match(/Artist:\s*(.+)/i);
+      // Parse simple README, e.g. **Title:** ..., **Artist:** ...
+      const titleMatch = readme.match(/\*\*Title:\*\*\s*(.+)/i);
+      const artistMatch = readme.match(/\*\*Artist:\*\*\s*(.+)/i);
       console.log('Title match:', titleMatch);
       console.log('Artist match:', artistMatch);
       if (titleMatch) title = titleMatch[1].trim();
