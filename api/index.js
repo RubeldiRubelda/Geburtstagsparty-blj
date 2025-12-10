@@ -35,7 +35,7 @@ function loadSongs() {
     const audioFile = fs.readdirSync(folderPath).find(file => file.endsWith('.mp3') || file.endsWith('.wav'));
     console.log('Audio file:', audioFile);
     const lyricsFile = path.join(folderPath, 'lyrics.txt');
-    const readmeFile = path.join(folderPath, 'README.md');
+    const readmeFile = path.join(folderPath, 'readme.md');
     console.log('Lyrics file:', lyricsFile);
     console.log('Readme file:', readmeFile);
 
