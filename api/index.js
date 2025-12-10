@@ -19,9 +19,27 @@ app.set('views', path.join(__dirname, '..', 'views'));
 
 // Datenbank in Vercel Blob
 const storeId = process.env.BLOB_STORE_ID || '1ahfzdbujc5ky0rd'; // Deine Store-ID
-const dataFileUrl = `https://${storeId}.public.blob.vercel-storage.com/songs.json`;
+const dbUrlFile = `https://${storeId}.public.blob.vercel-storage.com/db-url.json`;
+
+async function getDbUrl() {
+  try {
+    const response = await fetch(dbUrlFile);
+    if (response.ok) {
+      const data = await response.json();
+      return data.url;
+    }
+  } catch (e) {
+    console.log('No db-url.json found');
+  }
+  return null;
+}
 
 async function loadSongs() {
+  const dataFileUrl = await getDbUrl();
+  if (!dataFileUrl) {
+    console.log('No data URL, returning empty');
+    return [];
+  }
   console.log('Loading songs from:', dataFileUrl);
   try {
     const response = await fetch(dataFileUrl);
@@ -45,8 +63,13 @@ async function saveSongs(songs) {
   const blob = await put('songs.json', JSON.stringify(songs), {
     access: 'public',
   });
-  console.log('Saved to Blob URL:', blob.url);
-  // Die URL wird automatisch generiert
+  console.log('Saved songs to Blob URL:', blob.url);
+
+  // Speichere die URL in db-url.json
+  const urlBlob = await put('db-url.json', JSON.stringify({ url: blob.url }), {
+    access: 'public',
+  });
+  console.log('Saved URL to:', urlBlob.url);
 }
 
 // Multer für Uploads (in Memory speichern)
