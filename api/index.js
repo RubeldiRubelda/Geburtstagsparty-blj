@@ -36,6 +36,8 @@ function loadSongs() {
     console.log('Audio file:', audioFile);
     const lyricsFile = path.join(folderPath, 'lyrics.txt');
     const readmeFile = path.join(folderPath, 'README.md');
+    console.log('Lyrics file:', lyricsFile);
+    console.log('Readme file:', readmeFile);
 
     let lyrics = '';
     if (fs.existsSync(lyricsFile)) {
@@ -46,6 +48,8 @@ function loadSongs() {
     if (fs.existsSync(readmeFile)) {
       readme = fs.readFileSync(readmeFile, 'utf8');
       console.log('Readme content:', readme);
+    } else {
+      console.log('Readme file does not exist');
     }
 
     let title = folder;
